@@ -6,40 +6,60 @@ const path = require('path')
 const contactsPath = path.join(__dirname, 'db/contacts.json')
 
 const listContacts = async () => {
-  const contacts = await fs.readFile(contactsPath)
-  return JSON.parse(contacts)
+  try {
+    const contacts = await fs.readFile(contactsPath)
+    return JSON.parse(contacts)
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
+  }
 }
 
 const getContactById = async (contactId) => {
-  const contacts = await listContacts()
+  try {
+    const contacts = await listContacts()
 
-  const resultContact = contacts.find((contact) => contact.id === contactId)
+    const resultContact = contacts.find((contact) => contact.id === contactId)
 
-  return resultContact || null
+    return resultContact || null
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
+  }
 }
 
 const removeContact = async (contactId) => {
-  const contacts = await listContacts()
-  const index = contacts.findIndex((contact) => contact.id === contactId)
-  if (index === -1) {
-    return null
+  try {
+    const contacts = await listContacts()
+    const index = contacts.findIndex((contact) => contact.id === contactId)
+    if (index === -1) {
+      return null
+    }
+    const [result] = contacts.splice(index, 1)
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2))
+    return result
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
   }
-  const [result] = contacts.splice(index, 1)
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2))
-  return result
 }
 
 const addContact = async ({ name, email, phone }) => {
-  const contacts = await listContacts()
-  const newContact = {
-    id: nanoid(),
-    name,
-    email,
-    phone,
+  try {
+    const contacts = await listContacts()
+    const newContact = {
+      id: nanoid(),
+      name,
+      email,
+      phone,
+    }
+    contacts.push(newContact)
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2))
+    return newContact
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
   }
-  contacts.push(newContact)
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2))
-  return newContact
 }
 
 module.exports = {
